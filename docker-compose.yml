@@ -1,0 +1,53 @@
+services:
+  catalogue:
+    build: ./catalogue
+    container_name: catalogue
+    ports:
+      - "5001:8000"
+    environment:
+      DB_PATH: /data/catalogue.db
+    volumes:
+      - catalogue_data:/data
+    networks:
+      - pme-net
+    restart: unless-stopped
+
+  notifications:
+    build: ./notifications
+    container_name: notifications
+    ports:
+      - "5003:8000"
+    environment:
+      DB_PATH: /data/notifications.db
+    volumes:
+      - notifications_data:/data
+    networks:
+      - pme-net
+    restart: unless-stopped
+
+  commandes:
+    build: ./commandes
+    container_name: commandes
+    ports:
+      - "5002:8000"
+    environment:
+      DB_PATH: /data/commandes.db
+      CATALOGUE_URL: http://catalogue:8000
+      NOTIFICATIONS_URL: http://notifications:8000
+    volumes:
+      - commandes_data:/data
+    depends_on:
+      - catalogue
+      - notifications
+    networks:
+      - pme-net
+    restart: unless-stopped
+
+networks:
+  pme-net:
+    driver: bridge
+
+volumes:
+  catalogue_data:
+  notifications_data:
+  commandes_data:
